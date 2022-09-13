@@ -5,7 +5,7 @@ export class User {
   password: string;
   lastMessage?: string;
   lastMessageAt?: Date;
-  messagesDate?: Date;
+  messagesDate?: Date[];
   messagesCreateds?: number;
   createdAt?: Date;
   updatedAt?: Date;

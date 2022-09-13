@@ -2,14 +2,15 @@ import {
   Injectable,
   NotAcceptableException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { handleErrorConstraintUnique } from 'src/utils/handle-error-unique.util';
-import { handleTokenIsValid } from 'src/utils/handle-token-is-valid.util';
 import { User } from './entities/user.entity';
+import jwtDecode from 'jwt-decode';
 
 @Injectable()
 export class UsersService {
@@ -83,8 +84,11 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User id '${id}' not found`);
     }
+    const payload: User = jwtDecode(headers.authorization);
 
-    handleTokenIsValid(headers, user.email);
+    if (payload.email !== user.email) {
+      throw new UnauthorizedException(`Emails don't match`);
+    }
 
     return user;
   }

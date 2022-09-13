@@ -7,12 +7,12 @@ export class CreateMessageDto {
     description: 'Message text',
     example: 'hello!',
   })
-  name: string;
+  text: string;
 
   @IsOptional()
   @ApiProperty({
     description: 'nickname of the message',
     example: 'Alvin',
   })
-  email: string;
+  nickname: string;
 }

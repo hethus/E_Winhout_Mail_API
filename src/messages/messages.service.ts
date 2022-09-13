@@ -10,12 +10,22 @@ export class UsersService {
 
   async create(dto: CreateMessageDto): Promise<Message> {
     return await this.prisma.message
-      .create({ dto })
+      .create({
+        data: dto,
+      })
       .catch(handleErrorConstraintUnique);
   }
 
   findOne(id: string): Promise<Message> {
     return this.prisma.message.findUnique({ where: { id } });
+  }
+
+  async findAleatory(): Promise<Message> {
+    const all = this.prisma.message.findMany();
+
+    const random = Math.floor(Math.random() * (await all).length);
+
+    return all[random];
   }
 
   findAll(): Promise<Message[]> {

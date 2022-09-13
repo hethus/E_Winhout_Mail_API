@@ -31,6 +31,16 @@ export class UsersController {
   @Get()
   @UseGuards(AuthGuard())
   @ApiOperation({
+    summary: 'Get a random message',
+  })
+  @ApiBearerAuth()
+  findAleatory(): Promise<Message | void> {
+    return this.usersService.findAleatory();
+  }
+
+  @Get()
+  @UseGuards(AuthGuard())
+  @ApiOperation({
     summary: 'Get all messages',
   })
   @ApiBearerAuth()
