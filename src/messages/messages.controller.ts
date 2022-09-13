@@ -1,21 +1,23 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { UsersService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Message } from './entities/message.entity';
+import { MessagesService } from './messages.service';
 
-@ApiTags('users')
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+@ApiTags('messages')
+@Controller('messages')
+export class MessagesController {
+  constructor(private readonly messagesService: MessagesService) {}
 
   @Post()
+  @UseGuards(AuthGuard())
   @ApiOperation({
     summary: 'Create a new message',
   })
+  @ApiBearerAuth()
   create(@Body() dto: CreateMessageDto): Promise<Message | void> {
-    return this.usersService.create(dto);
+    return this.messagesService.create(dto);
   }
 
   @Get(':id')
@@ -25,17 +27,17 @@ export class UsersController {
   })
   @ApiBearerAuth()
   findOne(@Param('id') id: string): Promise<Message | void> {
-    return this.usersService.findOne(id);
+    return this.messagesService.findOne(id);
   }
 
-  @Get()
+  @Get('random/one')
   @UseGuards(AuthGuard())
   @ApiOperation({
     summary: 'Get a random message',
   })
   @ApiBearerAuth()
   findAleatory(): Promise<Message | void> {
-    return this.usersService.findAleatory();
+    return this.messagesService.findAleatory();
   }
 
   @Get()
@@ -45,6 +47,6 @@ export class UsersController {
   })
   @ApiBearerAuth()
   findAll(): Promise<Message[] | void> {
-    return this.usersService.findAll();
+    return this.messagesService.findAll();
   }
 }

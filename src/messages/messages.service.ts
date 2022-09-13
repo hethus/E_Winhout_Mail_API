@@ -3,9 +3,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { handleErrorConstraintUnique } from 'src/utils/handle-error-unique.util';
 import { Message } from './entities/message.entity';
+import { rando } from '@nastyox/rando.js';
 
 @Injectable()
-export class UsersService {
+export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateMessageDto): Promise<Message> {
@@ -21,11 +22,11 @@ export class UsersService {
   }
 
   async findAleatory(): Promise<Message> {
-    const all = this.prisma.message.findMany();
-
-    const random = Math.floor(Math.random() * (await all).length);
-
-    return all[random];
+    const all = await this.prisma.message.findMany();
+    console.log(all);
+    const random = rando(all);
+    console.log(random);
+    return random;
   }
 
   findAll(): Promise<Message[]> {
