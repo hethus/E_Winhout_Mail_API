@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { handleErrorConstraintUnique } from 'src/utils/handle-error-unique.util';
@@ -10,6 +10,17 @@ export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateMessageDto): Promise<Message> {
+    if (dto.nickname.includes('@!easteregg=') && dto.nickname.includes('=!@')) {
+      const split = dto.nickname.split('=!@');
+
+      dto.nickname = split[1];
+      dto.command = split[0].split('@!easteregg=')[1];
+
+      if (!dto.command.includes('&')) {
+        throw new UnprocessableEntityException('Invalid command');
+      }
+    }
+
     return await this.prisma.message
       .create({
         data: dto,
@@ -23,9 +34,9 @@ export class MessagesService {
 
   async findAleatory(): Promise<Message> {
     const all = await this.prisma.message.findMany();
-    console.log(all);
+
     const random = rando(all);
-    console.log(random);
+
     return random;
   }
 

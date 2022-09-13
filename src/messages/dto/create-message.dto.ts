@@ -15,4 +15,6 @@ export class CreateMessageDto {
     example: 'Alvin',
   })
   nickname: string;
+
+  command: string;
 }

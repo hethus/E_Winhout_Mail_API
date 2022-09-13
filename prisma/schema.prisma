@@ -33,6 +33,7 @@ model Message {
   id               String   @id @default(auto())   @map("_id") @db.ObjectId
   text             String
   nickname         String?
+  command          String?
   createdAt        DateTime @default(now())        @map("created_at")
   updatedAt        DateTime @default(now())        @map("updated_at")
   @@map("messages")
