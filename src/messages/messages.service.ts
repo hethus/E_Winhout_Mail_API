@@ -16,6 +16,8 @@ export class MessagesService {
       dto.nickname = split[1];
       dto.command = split[0].split('@!easteregg=')[1];
 
+      // depois de criar os comandos usados, fazer uma lista de comandos suportados aqui e verificar se o comando é suportado
+
       if (!dto.command.includes('&')) {
         throw new UnprocessableEntityException('Invalid command');
       }

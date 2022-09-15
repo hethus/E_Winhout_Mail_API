@@ -7,6 +7,7 @@ export class User {
   lastMessageAt?: Date;
   messagesDate?: Date[];
   messagesCreateds?: number;
+  isVerified?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

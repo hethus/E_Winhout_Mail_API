@@ -11,6 +11,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { handleErrorConstraintUnique } from 'src/utils/handle-error-unique.util';
 import { User } from './entities/user.entity';
 import jwtDecode from 'jwt-decode';
+import * as nodemailer from 'nodemailer';
+import { htmlExample } from 'src/utils/html-examples';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +29,60 @@ export class UsersService {
 
     return await this.prisma.user
       .create({ data })
+      .then((user) => {
+        //enviar email de verificação
+
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 587,
+          service: 'gmail',
+          auth: {
+            user: 'ewithoutmail@gmail.com',
+            pass: 'wcgflkdvrvcbwjyo',
+          },
+        });
+
+        console.log(transporter);
+
+        const mailData = {
+          from: 'ewithoutmail@gmail.com',
+          to: dto.email,
+          subject: 'Verify your email',
+          html: htmlExample(dto.name, user.id),
+        };
+
+        transporter.sendMail(mailData, function (err, info) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(info);
+          }
+        });
+
+        return user;
+      })
+      .catch(handleErrorConstraintUnique);
+  }
+
+  async verifyUserEmail(id: string) {
+    const user: User = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (user.isVerified) {
+      throw new NotAcceptableException('Email already verified');
+    }
+
+    return this.prisma.user
+      .update({
+        where: { id },
+        data: {
+          isVerified: true,
+        },
+      })
+      .then(() => {
+        return 'Email verified! You can close this page and login';
+      })
       .catch(handleErrorConstraintUnique);
   }
 

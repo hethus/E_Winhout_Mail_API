@@ -29,6 +29,16 @@ export class UsersController {
     return this.usersService.create(dto);
   }
 
+  //verifyUserEmail
+
+  @Get('verify/:id')
+  @ApiOperation({
+    summary: 'Verify user email',
+  })
+  verifyUserEmail(@Param('id') id: string): Promise<string> {
+    return this.usersService.verifyUserEmail(id);
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard())
   @ApiOperation({
