@@ -7,12 +7,16 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto';
 import { handleErrorConstraintUnique } from 'src/utils/handle-error-unique.util';
 import { User } from './entities/user.entity';
 import jwtDecode from 'jwt-decode';
 import * as nodemailer from 'nodemailer';
-import { htmlExample } from 'src/utils/html-examples';
+import {
+  htmlExampleChanged,
+  htmlExampleChangePassword,
+  htmlExampleVerify,
+} from 'src/utils/html-examples';
 
 @Injectable()
 export class UsersService {
@@ -30,8 +34,6 @@ export class UsersService {
     return await this.prisma.user
       .create({ data })
       .then((user) => {
-        //enviar email de verificação
-
         const transporter = nodemailer.createTransport({
           host: 'smtp.gmail.com',
           port: 587,
@@ -42,13 +44,11 @@ export class UsersService {
           },
         });
 
-        console.log(transporter);
-
         const mailData = {
-          from: 'ewithoutmail@gmail.com',
+          from: 'E Without Mail<ewithoutmail@gmail.com>',
           to: dto.email,
           subject: 'Verify your email',
-          html: htmlExample(dto.name, user.id),
+          html: htmlExampleVerify(dto.name, user.id),
         };
 
         transporter.sendMail(mailData, function (err, info) {
@@ -82,6 +82,89 @@ export class UsersService {
       })
       .then(() => {
         return 'Email verified! You can close this page and login';
+      })
+      .catch(handleErrorConstraintUnique);
+  }
+
+  async forgotPasswordEmail(email: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Email '${email}' not found`);
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      service: 'gmail',
+      auth: {
+        user: 'ewithoutmail@gmail.com',
+        pass: 'wcgflkdvrvcbwjyo',
+      },
+    });
+
+    const mailData = {
+      from: 'E Without Mail<ewithoutmail@gmail.com>',
+      to: email,
+      subject: 'Reset your password',
+      html: htmlExampleChangePassword(user.name, user.id),
+    };
+
+    transporter.sendMail(mailData, function (err, info) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(info);
+      }
+    });
+
+    return 'Email sent!';
+  }
+
+  async changePassword(
+    id: string,
+    dto: UpdateUserPasswordDto,
+  ): Promise<{ message: string }> {
+    const hashedPassword = await bcrypt.hash(dto.password, 8);
+
+    dto.updatedAt = new Date();
+
+    return this.prisma.user
+      .update({
+        where: { id },
+        data: {
+          password: hashedPassword,
+          updatedAt: dto.updatedAt,
+        },
+      })
+      .then((user) => {
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 587,
+          service: 'gmail',
+          auth: {
+            user: 'ewithoutmail@gmail.com',
+            pass: 'wcgflkdvrvcbwjyo',
+          },
+        });
+
+        const mailData = {
+          from: 'E Without Mail<ewithoutmail@gmail.com>',
+          to: user.email,
+          subject: 'Password changed',
+          html: htmlExampleChanged(user.name, 'password'),
+        };
+
+        transporter.sendMail(mailData, function (err, info) {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(info);
+          }
+        });
+        return { message: 'Password changed' };
       })
       .catch(handleErrorConstraintUnique);
   }

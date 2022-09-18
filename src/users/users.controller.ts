@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserPasswordDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Headers } from '@nestjs/common';
@@ -37,6 +37,25 @@ export class UsersController {
   })
   verifyUserEmail(@Param('id') id: string): Promise<string> {
     return this.usersService.verifyUserEmail(id);
+  }
+
+  @Get('change/:email')
+  @ApiOperation({
+    summary: 'Send email to change password',
+  })
+  forgotPasswordEmail(@Param('email') email: string): Promise<string> {
+    return this.usersService.forgotPasswordEmail(email);
+  }
+
+  @Patch('change/password/:id')
+  @ApiOperation({
+    summary: 'Change user password',
+  })
+  changePassword(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserPasswordDto,
+  ): Promise<{ message: string }> {
+    return this.usersService.changePassword(id, dto);
   }
 
   @Get(':id')
